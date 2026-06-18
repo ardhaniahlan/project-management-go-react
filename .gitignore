@@ -1,0 +1,33 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output directory (jika kamu mem-build ke dalam folder bin)
+/bin/
+/build/
+main
+
+# Dependency directories
+# (Biasanya vendor tidak di-commit sejak ada Go Modules, kecuali project spesifik)
+/vendor/
+
+# Environment Variables (SANGAT PENTING)
+.env
+.env.*
+!.env.example
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
