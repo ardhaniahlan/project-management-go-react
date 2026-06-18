@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -15,4 +14,8 @@ type Comment struct {
 	UserPublicID   uuid.UUID `json:"user_public_id" db:"user_public_id" gorm:"column:user_public_id;not null"`
 	Message        string    `json:"message" db:"message" gorm:"column:message;not null"`
 	CreatedAt      time.Time `json:"created_at" db:"created_at" gorm:"column:created_at"`
+
+	// Relasi
+	Card           Card      `json:"-" gorm:"foreignKey:CardInternalID;references:InternalID"`
+	User           User      `json:"-" gorm:"foreignKey:UserInternalID;references:InternalID"`
 }

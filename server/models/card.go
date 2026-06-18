@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -15,4 +14,7 @@ type Card struct {
 	DueDate        *time.Time `json:"due_date,omitempty" db:"due_date" gorm:"column:due_date"`
 	Position       int        `json:"position" db:"position" gorm:"column:position"`
 	CreatedAt      time.Time  `json:"created_at" db:"created_at" gorm:"column:created_at"`
+
+	// Relasi
+	List           List       `json:"-" gorm:"foreignKey:ListInternalID;references:InternalID"`
 }

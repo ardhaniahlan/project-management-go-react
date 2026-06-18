@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -13,4 +12,7 @@ type List struct {
 	Title           string    `json:"title" db:"title" gorm:"not null;column:title"`
 	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 	BoardInternalID int64     `json:"-" db:"board_internal_id"`
+
+	// Relasi
+	Board           Board     `json:"-" gorm:"foreignKey:BoardInternalID;references:InternalID"`
 }
