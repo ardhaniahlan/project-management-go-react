@@ -30,3 +30,29 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 	userResponse := models.MapToUserResponse(user)
 	return utils.Created(ctx, "User registered successfully", userResponse)
 }
+
+func (c *UserController) Login(ctx *fiber.Ctx) error {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := ctx.BodyParser(&req); err != nil {
+		return utils.BadRequest(ctx, "Invalid request body", err.Error())
+	}
+
+	user, err := c.service.Login(req.Email, req.Password)
+	if err != nil {
+		return utils.Unauthorized(ctx, "Invalid credentials", err.Error())
+	}
+
+	token, _ := utils.GenerateTokenJWT(user.InternalID, user.Role, user.Email, user.PublicID) 
+	refreshToken, _ := utils.GenerateRefreshTokenJWT(user.InternalID)
+
+	userResponse := models.MapToUserResponse(user)
+	return utils.Success(ctx, "Login successful", fiber.Map{
+		"access_token": token,
+		"refresh_token": refreshToken,
+		"user": userResponse,
+	})
+}
