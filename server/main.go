@@ -3,8 +3,14 @@ package main
 import (
 	"log"
 	"project-management-be/config"
+	"project-management-be/controllers"
 	"project-management-be/database/seeders"
 	"project-management-be/models"
+	"project-management-be/repositories"
+	"project-management-be/routes"
+	"project-management-be/services"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
@@ -12,7 +18,6 @@ func main() {
 	config.ConnectDB()
 
 	log.Println("Menjalankan sinkronisasi database...")
-
 	err := config.DB.AutoMigrate(
 		&models.User{},
 		&models.Board{},
@@ -27,13 +32,23 @@ func main() {
 		&models.Label{},
 		&models.Comment{},
 	)
-
 	if err != nil {
 		log.Fatal("Gagal melakukan migrasi tabel: ", err)
 	}
-
 	log.Println("Migrasi tabel berhasil! Database siap digunakan.")
 
 	log.Println("Menjalankan seeder...")
 	seeders.SeedAdmin()
+
+	app := fiber.New()
+
+	userRepo := repositories.NewUserRepository(config.DB)
+	userService := services.NewUserService(userRepo)
+	userController := controllers.NewUserController(userService)
+	
+	routes.SetupRoutes(app, userController)
+
+	port := config.AppConfig.AppPort
+	log.Println("Server berjalan di port ", port)
+	app.Listen(":" + port)
 }
