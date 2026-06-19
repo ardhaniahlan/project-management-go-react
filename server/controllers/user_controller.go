@@ -56,3 +56,15 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		"user": userResponse,
 	})
 }
+
+func (c *UserController) GetUser(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+
+	user, err := c.service.GetByPublicID(id)
+	if err != nil {
+		return utils.NotFound(ctx, "User not found", err.Error())
+	}
+
+	userResponse := models.MapToUserResponse(user)
+	return utils.Success(ctx, "User found", userResponse)
+}
