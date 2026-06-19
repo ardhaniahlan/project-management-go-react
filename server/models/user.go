@@ -18,3 +18,23 @@ type User struct {
 	UpdatedAt  time.Time      `json:"updated_at" db:"updated_at"`
 	DeletedAt  gorm.DeletedAt `json:"-" gorm:"index"`
 }
+
+type UserResponse struct {
+	PublicID  uuid.UUID `json:"public_id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func MapToUserResponse(user *User) UserResponse {
+	return UserResponse{
+		PublicID:  user.PublicID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}

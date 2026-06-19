@@ -27,5 +27,6 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 		return utils.BadRequest(ctx, "Failed Register user", err.Error())
 	}
 
-	return utils.Created(ctx, "User registered successfully", nil)
+	userResponse := models.MapToUserResponse(user)
+	return utils.Created(ctx, "User registered successfully", userResponse)
 }
