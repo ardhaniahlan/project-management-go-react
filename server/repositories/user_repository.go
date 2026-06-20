@@ -4,6 +4,7 @@ import (
 	"project-management-be/models"
 	"project-management-be/utils"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,7 @@ type UserRepository interface {
 	FindByPublicID(publicID string) (*models.User, error)
 	GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error)
 	Update(user *models.User) error
+	Delete(id uuid.UUID) error
 }
 
 type userRepository struct {
@@ -69,4 +71,8 @@ func (r *userRepository) GetAllPaginate(filter, sort string, limit, offset int) 
 func (r *userRepository) Update(user *models.User) error {
 	return r.db.Model(&models.User{}).Where("public_id = ?", user.PublicID).Updates(map[string]interface{}{
 		"name": user.Name}).Error
+}
+
+func (r *userRepository) Delete(id uuid.UUID) error {
+	return r.db.Where("public_id = ?", id).Delete(&models.User{}).Error
 }

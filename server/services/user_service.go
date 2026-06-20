@@ -17,6 +17,7 @@ type UserService interface {
 	GetByPublicID(publicID string) (*models.User, error)
 	GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error)
 	Update(user *models.User) error
+	Delete(id uuid.UUID) error
 }
 
 type userService struct {
@@ -77,4 +78,8 @@ func (s *userService) GetAllPaginate (filter, sort string, limit, offset int) ([
 
 func (s *userService) Update(user *models.User) error {
 	return s.repo.Update(user)
+}
+
+func (s *userService) Delete(id uuid.UUID) error {
+	return s.repo.Delete(id)
 }

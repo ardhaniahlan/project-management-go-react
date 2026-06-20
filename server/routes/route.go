@@ -16,4 +16,5 @@ func SetupRoutes(app *fiber.App, uc *controllers.UserController) {
 	user.Get("/page", uc.GetUsersPaginate)
 	user.Get("/:id", uc.GetUser)
 	user.Put("/:id", uc.UpdateUser)
+	user.Delete("/:id", uc.DeleteUser)
 }

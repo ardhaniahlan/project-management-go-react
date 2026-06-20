@@ -137,3 +137,18 @@ func (c *UserController) UpdateUser(ctx *fiber.Ctx) error {
 	return utils.Success(ctx, "User updated successfully", userResponse)
 }
 
+func (c *UserController) DeleteUser(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+
+	publicID, err := uuid.Parse(id)
+	if err != nil {
+		return utils.BadRequest(ctx, "Invalid UUID", err.Error())
+	}
+
+	if err := c.service.Delete(publicID); err != nil {
+		return utils.InternalServerError(ctx, "Failed to delete user", err.Error())
+	}
+
+	return utils.Success(ctx, "User deleted successfully", nil)
+}
+
