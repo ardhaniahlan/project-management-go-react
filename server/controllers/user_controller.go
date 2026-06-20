@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type UserController struct {
@@ -107,3 +108,32 @@ func (c *UserController) GetUsersPaginate(ctx *fiber.Ctx) error {
 
 	return utils.SuccessPaginate(ctx, "Users fetched successfully", userResponse, meta)
 }
+
+func (c *UserController) UpdateUser(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+
+	publicID, err := uuid.Parse(id)
+	if err != nil {
+		return utils.BadRequest(ctx, "Invalid UUID", err.Error())
+	}
+
+	var user models.User
+	if err := ctx.BodyParser(&user); err != nil {
+		return utils.BadRequest(ctx, "Invalid Request Body", err.Error())
+	}
+
+	user.PublicID = publicID
+
+	if err := c.service.Update(&user); err != nil {
+		return utils.InternalServerError(ctx, "Failed to update user", err.Error())
+	}
+
+	userUpdated, err := c.service.GetByPublicID(id)
+	if err != nil {
+		return utils.InternalServerError(ctx, "Failed to fetch updated user", err.Error())
+	}
+
+	userResponse := models.MapToUserResponse(userUpdated)
+	return utils.Success(ctx, "User updated successfully", userResponse)
+}
+

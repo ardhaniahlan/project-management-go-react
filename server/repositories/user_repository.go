@@ -10,9 +10,10 @@ import (
 type UserRepository interface {
 	Create(user *models.User) error
 	FindByEmail(email string) (*models.User, error)
-	FindByID (id uint64) (*models.User, error)
-	FindByPublicID (publicID string) (*models.User, error)
-	GetAllPaginate (filter, sort string, limit, offset int) ([]models.User, int64, error)
+	FindByID(id uint64) (*models.User, error)
+	FindByPublicID(publicID string) (*models.User, error)
+	GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error)
+	Update(user *models.User) error
 }
 
 type userRepository struct {
@@ -33,19 +34,19 @@ func (r *userRepository) FindByEmail(email string) (*models.User, error) {
 	return &user, err
 }
 
-func (r *userRepository) FindByID (id uint64) (*models.User, error) {
+func (r *userRepository) FindByID(id uint64) (*models.User, error) {
 	var user models.User
 	err := r.db.First(&user, id).Error
 	return &user, err
 }
 
-func (r *userRepository) FindByPublicID (publicID string) (*models.User, error) {
+func (r *userRepository) FindByPublicID(publicID string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("public_id = ?", publicID).First(&user).Error
 	return &user, err
 }
 
-func (r *userRepository) GetAllPaginate (filter, sort string, limit, offset int) ([]models.User, int64, error) {
+func (r *userRepository) GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error) {
 	var users []models.User
 
 	db := r.db.Model(&models.User{})
@@ -62,6 +63,10 @@ func (r *userRepository) GetAllPaginate (filter, sort string, limit, offset int)
 	}
 
 	count, err := utils.Paginate(db, limit, offset, sort, &users)
-
 	return users, count, err
+}
+
+func (r *userRepository) Update(user *models.User) error {
+	return r.db.Model(&models.User{}).Where("public_id = ?", user.PublicID).Updates(map[string]interface{}{
+		"name": user.Name}).Error
 }
