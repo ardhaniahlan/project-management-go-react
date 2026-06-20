@@ -14,7 +14,7 @@ type UserRepository interface {
 	FindByID(id uint64) (*models.User, error)
 	FindByPublicID(publicID string) (*models.User, error)
 	GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error)
-	Update(user *models.User) error
+	Update(user *models.User, publicID string) error
 	Delete(id uuid.UUID) error
 }
 
@@ -68,8 +68,8 @@ func (r *userRepository) GetAllPaginate(filter, sort string, limit, offset int) 
 	return users, count, err
 }
 
-func (r *userRepository) Update(user *models.User) error {
-	return r.db.Model(&models.User{}).Where("public_id = ?", user.PublicID).Updates(map[string]interface{}{
+func (r *userRepository) Update(user *models.User, publicID string) error {
+	return r.db.Model(&models.User{}).Where("public_id = ?", publicID).Updates(map[string]interface{}{
 		"name": user.Name}).Error
 }
 

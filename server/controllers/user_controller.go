@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"math"
+	"project-management-be/dto"
 	"project-management-be/models"
 	"project-management-be/services"
 	"project-management-be/utils"
@@ -20,10 +21,17 @@ func NewUserController(s services.UserService) *UserController {
 }
 
 func (c *UserController) Register(ctx *fiber.Ctx) error {
-	user := new(models.User)
+	req := new(dto.RegisterRequest)
 
-	if err := ctx.BodyParser(user); err != nil {
+	if err := ctx.BodyParser(req); err != nil {
 		return utils.BadRequest(ctx, "Invalid Request Body", err.Error())
+	}
+
+	user := &models.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+		Role:     req.Role,
 	}
 
 	if err := c.service.Register(user); err != nil {
@@ -35,10 +43,7 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) Login(ctx *fiber.Ctx) error {
-	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	req := new(dto.LoginRequest)
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.BadRequest(ctx, "Invalid request body", err.Error())
@@ -49,14 +54,14 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		return utils.Unauthorized(ctx, "Invalid credentials", err.Error())
 	}
 
-	token, _ := utils.GenerateTokenJWT(user.InternalID, user.Role, user.Email, user.PublicID) 
+	token, _ := utils.GenerateTokenJWT(user.InternalID, user.Role, user.Email, user.PublicID)
 	refreshToken, _ := utils.GenerateRefreshTokenJWT(user.InternalID)
 
 	userResponse := models.MapToUserResponse(user)
 	return utils.Success(ctx, "Login successful", fiber.Map{
-		"access_token": token,
+		"access_token":  token,
 		"refresh_token": refreshToken,
-		"user": userResponse,
+		"user":          userResponse,
 	})
 }
 
@@ -111,20 +116,21 @@ func (c *UserController) GetUsersPaginate(ctx *fiber.Ctx) error {
 
 func (c *UserController) UpdateUser(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-
 	publicID, err := uuid.Parse(id)
 	if err != nil {
 		return utils.BadRequest(ctx, "Invalid UUID", err.Error())
 	}
 
-	var user models.User
-	if err := ctx.BodyParser(&user); err != nil {
+	req := new(dto.UpdateUserRequest)
+	if err := ctx.BodyParser(req); err != nil {
 		return utils.BadRequest(ctx, "Invalid Request Body", err.Error())
 	}
 
-	user.PublicID = publicID
+	userUpdateData := &models.User{
+		Name:  req.Name,
+	}
 
-	if err := c.service.Update(&user); err != nil {
+	if err := c.service.Update(userUpdateData, publicID); err != nil {
 		return utils.InternalServerError(ctx, "Failed to update user", err.Error())
 	}
 
@@ -151,4 +157,3 @@ func (c *UserController) DeleteUser(ctx *fiber.Ctx) error {
 
 	return utils.Success(ctx, "User deleted successfully", nil)
 }
-
