@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"math"
 	"project-management-be/models"
 	"project-management-be/services"
 	"project-management-be/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -67,4 +69,41 @@ func (c *UserController) GetUser(ctx *fiber.Ctx) error {
 
 	userResponse := models.MapToUserResponse(user)
 	return utils.Success(ctx, "User found", userResponse)
+}
+
+func (c *UserController) GetUsersPaginate(ctx *fiber.Ctx) error {
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+	filter := ctx.Query("filter")
+	sort := ctx.Query("sort")
+
+	users, count, err := c.service.GetAllPaginate(filter, sort, limit, offset)
+	if err != nil {
+		return utils.InternalServerError(ctx, "Failed to fetch users", err.Error())
+	}
+
+	userResponse := make([]models.UserResponse, 0)
+	for _, user := range users {
+		userResponse = append(userResponse, models.MapToUserResponse(&user))
+	}
+
+	meta := utils.PaginationMeta{
+		Page:       int64(page),
+		Limit:      int64(limit),
+		Total:      count,
+		TotalPages: int64(math.Ceil(float64(count) / float64(limit))),
+		Filter:     filter,
+		Sort:       sort,
+	}
+
+	return utils.SuccessPaginate(ctx, "Users fetched successfully", userResponse, meta)
 }

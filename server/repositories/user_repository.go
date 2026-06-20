@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"project-management-be/config"
 	"project-management-be/models"
+	"project-management-be/utils"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +12,7 @@ type UserRepository interface {
 	FindByEmail(email string) (*models.User, error)
 	FindByID (id uint64) (*models.User, error)
 	FindByPublicID (publicID string) (*models.User, error)
+	GetAllPaginate (filter, sort string, limit, offset int) ([]models.User, int64, error)
 }
 
 type userRepository struct {
@@ -28,18 +29,39 @@ func (r *userRepository) Create(user *models.User) error {
 
 func (r *userRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := config.DB.Where("email = ?", email).First(&user).Error
+	err := r.db.Where("email = ?", email).First(&user).Error
 	return &user, err
 }
 
 func (r *userRepository) FindByID (id uint64) (*models.User, error) {
 	var user models.User
-	err := config.DB.First(&user, id).Error
+	err := r.db.First(&user, id).Error
 	return &user, err
 }
 
 func (r *userRepository) FindByPublicID (publicID string) (*models.User, error) {
 	var user models.User
-	err := config.DB.Where("public_id = ?", publicID).First(&user).Error
+	err := r.db.Where("public_id = ?", publicID).First(&user).Error
 	return &user, err
+}
+
+func (r *userRepository) GetAllPaginate (filter, sort string, limit, offset int) ([]models.User, int64, error) {
+	var users []models.User
+
+	db := r.db.Model(&models.User{})
+
+	if filter != "" {
+		filterPattern := "%" + filter + "%"
+		db = db.Where("name ILIKE ? OR email ILIKE ?", filterPattern, filterPattern)
+	}
+
+	if sort == "-id" {
+		sort = "-internal_id"
+	} else if sort == "id" {
+		sort = "internal_id"
+	}
+
+	count, err := utils.Paginate(db, limit, offset, sort, &users)
+
+	return users, count, err
 }
