@@ -92,3 +92,21 @@ func (c *BoardController) AddBoardMembers(ctx *fiber.Ctx) error {
 
 	return utils.Success(ctx, "Anggota berhasil ditambahkan", nil)
 }
+
+func (c *BoardController) RemoveBoardMembers(ctx *fiber.Ctx) error {
+	claims, _ := ctx.Locals("user").(jwt.MapClaims)
+	actorPublicID := claims["public_id"].(string)
+
+	boardPublicID := ctx.Params("id")
+
+	req := new(dto.RemoveMembersRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return utils.BadRequest(ctx, "Format request tidak valid", err.Error())
+	}
+
+	if err := c.boardService.RemoveMembers(boardPublicID, req.UserIDs, actorPublicID); err != nil {
+		return utils.InternalServerError(ctx, "Gagal menghapus anggota", err.Error())
+	}
+
+	return utils.Success(ctx, "Anggota berhasil dihapus", nil)
+}
