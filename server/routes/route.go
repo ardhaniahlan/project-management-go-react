@@ -20,4 +20,5 @@ func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers
 
 	board := app.Group("/api/boards", middleware.Protected())
 	board.Post("/", bc.CreateBoard)
+	board.Put("/:id", bc.UpdateBoard)
 }

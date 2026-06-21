@@ -7,3 +7,9 @@ type CreateBoardRequest struct {
 	Description string     `json:"description" validate:"required"`
 	DueDate     *time.Time `json:"due_date,omitempty" validate:"omitempty"`
 }
+
+type UpdateBoardRequest struct {
+	Title       string     `json:"title" validate:"required"`
+	Description string     `json:"description" validate:"required"`
+	DueDate     *time.Time `json:"due_date,omitempty" validate:"omitempty"`
+}

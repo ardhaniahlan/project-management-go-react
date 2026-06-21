@@ -8,6 +8,8 @@ import (
 
 type BoardRepository interface {
 	Create(board *models.Board) error
+	Update(board *models.Board, publicID string) error
+	FindByPublicID(publicID string) (*models.Board, error)
 }
 
 type boardRepository struct {
@@ -20,4 +22,18 @@ func NewBoardRepository(db *gorm.DB) BoardRepository {
 
 func (r *boardRepository) Create(board *models.Board) error {
 	return r.db.Create(&board).Error
+}
+
+func (r *boardRepository) Update(board *models.Board, publicID string) error {
+	return r.db.Model(&models.Board{}).Where("public_id = ?", publicID).Updates(map[string]interface{}{
+		"title":       board.Title,
+		"description": board.Description,
+		"due_date":    board.DueDate,
+	}).Error
+}
+
+func (r *boardRepository) FindByPublicID(publicID string) (*models.Board, error) {
+	var board models.Board
+	err := r.db.Where("public_id = ?", publicID).First(&board).Error
+	return &board, err
 }

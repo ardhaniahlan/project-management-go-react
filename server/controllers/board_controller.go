@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type BoardController struct {
@@ -45,4 +46,31 @@ func (c *BoardController) CreateBoard(ctx *fiber.Ctx) error {
 	}
 
 	return utils.Created(ctx, "Board created successfully", board)
+}
+
+func (c *BoardController) UpdateBoard(ctx *fiber.Ctx) error {
+	claims, _ := ctx.Locals("user").(jwt.MapClaims)
+	userPublicID := claims["public_id"].(string)
+
+	boardID := ctx.Params("id")
+	if _, err := uuid.Parse(boardID); err != nil {
+		return utils.BadRequest(ctx, "Invalid public ID", err.Error())
+	}
+
+	req := new(dto.UpdateBoardRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return utils.BadRequest(ctx, "Invalid request body", err.Error())
+	}
+
+	board := &models.Board{
+		Title:       req.Title,
+		Description: req.Description,
+		DueDate:     req.DueDate,
+	}
+
+	if err := c.boardService.Update(boardID, board, userPublicID); err != nil {
+		return utils.InternalServerError(ctx, "Failed to update board", err.Error())
+	}
+
+	return utils.Success(ctx, "Board updated successfully", board)
 }
