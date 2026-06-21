@@ -74,3 +74,21 @@ func (c *BoardController) UpdateBoard(ctx *fiber.Ctx) error {
 
 	return utils.Success(ctx, "Board updated successfully", board)
 }
+
+func (c *BoardController) AddBoardMembers(ctx *fiber.Ctx) error {
+	claims, _ := ctx.Locals("user").(jwt.MapClaims)
+	actorPublicID := claims["public_id"].(string)
+
+	boardPublicID := ctx.Params("id")
+
+	req := new(dto.AddMembersRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return utils.BadRequest(ctx, "Format request tidak valid", err.Error())
+	}
+
+	if err := c.boardService.AddMembers(boardPublicID, req.UserIDs, actorPublicID); err != nil {
+		return utils.InternalServerError(ctx, "Gagal menambahkan anggota", err.Error())
+	}
+
+	return utils.Success(ctx, "Anggota berhasil ditambahkan", nil)
+}

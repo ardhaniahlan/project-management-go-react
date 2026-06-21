@@ -13,6 +13,7 @@ type UserRepository interface {
 	FindByEmail(email string) (*models.User, error)
 	FindByID(id uint64) (*models.User, error)
 	FindByPublicID(publicID string) (*models.User, error)
+	FindManyByPublicIDs(publicIDs []string) ([]models.User, error)
 	GetAllPaginate(filter, sort string, limit, offset int) ([]models.User, int64, error)
 	Update(user *models.User, publicID string) error
 	Delete(id uuid.UUID) error
@@ -75,4 +76,10 @@ func (r *userRepository) Update(user *models.User, publicID string) error {
 
 func (r *userRepository) Delete(id uuid.UUID) error {
 	return r.db.Where("public_id = ?", id).Delete(&models.User{}).Error
+}
+
+func (r *userRepository) FindManyByPublicIDs(publicIDs []string) ([]models.User, error) {
+	var users []models.User
+	err := r.db.Where("public_id IN ?", publicIDs).Find(&users).Error
+	return users, err
 }

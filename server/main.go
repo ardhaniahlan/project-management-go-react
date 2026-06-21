@@ -45,9 +45,10 @@ func main() {
 	userRepo := repositories.NewUserRepository(config.DB)
 	userService := services.NewUserService(userRepo)
 	userController := controllers.NewUserController(userService)
-	
+
 	boardRepo := repositories.NewBoardRepository(config.DB)
-	boardService := services.NewBoardService(boardRepo, userRepo)
+	boardMemberRepo := repositories.NewBoardMemberRepository(config.DB)
+	boardService := services.NewBoardService(boardRepo, userRepo, boardMemberRepo)
 	boardController := controllers.NewBoardController(boardService)
 
 	routes.SetupRoutes(app, userController, boardController)
