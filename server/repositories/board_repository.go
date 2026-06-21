@@ -10,6 +10,7 @@ type BoardRepository interface {
 	Update(board *models.Board, publicID string) error
 	FindByPublicID(publicID string) (*models.Board, error)
 	AddMembers(members []models.BoardMember) error
+	RemoveMembers(boardInternalID uint, userIDs []uint) error
 }
 
 type boardRepository struct {
@@ -40,4 +41,13 @@ func (r *boardRepository) FindByPublicID(publicID string) (*models.Board, error)
 
 func (r *boardRepository) AddMembers(members []models.BoardMember) error {
 	return r.db.Create(&members).Error
+}
+
+func (r *boardRepository) RemoveMembers(boardInternalID uint, userIDs []uint) error {
+	if len(userIDs) == 0 {
+		return nil
+	}
+	return r.db.
+	Where("board_internal_id = ? AND user_internal_id IN (?)", boardInternalID, userIDs).
+	Delete(&models.BoardMember{}).Error
 }

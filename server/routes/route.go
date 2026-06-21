@@ -22,4 +22,5 @@ func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers
 	board.Post("/", bc.CreateBoard)
 	board.Put("/:id", bc.UpdateBoard)
 	board.Post("/:id/members", bc.AddBoardMembers)
+	board.Delete("/:id/members", bc.RemoveBoardMembers)
 }
