@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"math"
 	"project-management-be/dto"
 	"project-management-be/models"
 	"project-management-be/services"
 	"project-management-be/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -109,4 +111,39 @@ func (c *BoardController) RemoveBoardMembers(ctx *fiber.Ctx) error {
 	}
 
 	return utils.Success(ctx, "Anggota berhasil dihapus", nil)
+}
+
+func (c *BoardController) GetMyBoardPaginate(ctx *fiber.Ctx) error {
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+	filter := ctx.Query("filter")
+	sort := ctx.Query("sort")
+
+	claims, _ := ctx.Locals("user").(jwt.MapClaims)
+	userPublicID := claims["public_id"].(string)
+
+	boards, count, err := c.boardService.GetAllByUserPaginate(userPublicID, filter, sort, limit, offset)
+	if err != nil {
+		return utils.InternalServerError(ctx, "Failed to get boards", err.Error())
+	}
+
+	meta := utils.PaginationMeta{
+		Page:       int64(page),
+		Limit:      int64(limit),
+		Total:      count,
+		TotalPages: int64(math.Ceil(float64(count) / float64(limit))),
+		Filter:     filter,
+		Sort:       sort,
+	}
+
+	return utils.SuccessPaginate(ctx, "Boards fetched successfully", boards, meta)
 }

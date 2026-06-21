@@ -15,6 +15,7 @@ type BoardService interface {
 	FindByPublicID(publicID string) (*models.Board, error)
 	AddMembers(boardPublicID string, userPublicIDs []string, actorPublicID string) error
 	RemoveMembers(boardPublicID string, userPublicIDs []string, actorPublicID string) error
+	GetAllByUserPaginate(userPublicID, filter, sort string, limit, offset int) ([]models.Board, int64, error)
 }
 
 type boardService struct {
@@ -144,4 +145,12 @@ func (s *boardService) RemoveMembers(boardPublicID string, userPublicIDs []strin
 	}
 
 	return s.boardRepo.RemoveMembers(uint(board.InternalID), membersToRemove)
+}
+
+func (s *boardService) GetAllByUserPaginate(userPublicID, filter, sort string, limit, offset int) ([]models.Board, int64, error) {
+	user, err := s.userRepo.FindByPublicID(userPublicID)
+	if err != nil {
+		return nil, 0, errors.New("user tidak ditemukan")
+	}
+	return s.boardRepo.FindAllByUserPaginate(uint(user.InternalID), filter, sort, limit, offset)
 }
