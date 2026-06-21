@@ -54,8 +54,15 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		return utils.Unauthorized(ctx, "Invalid credentials", err.Error())
 	}
 
-	token, _ := utils.GenerateTokenJWT(user.InternalID, user.Role, user.Email, user.PublicID)
-	refreshToken, _ := utils.GenerateRefreshTokenJWT(user.InternalID)
+	token, err := utils.GenerateTokenJWT(user.InternalID, user.Role, user.Email, user.PublicID)
+	if err != nil {
+		return utils.InternalServerError(ctx, "Gagal membuat access token", err.Error())
+	}
+
+	refreshToken, err := utils.GenerateRefreshTokenJWT(user.InternalID)
+	if err != nil {
+		return utils.InternalServerError(ctx, "Gagal membuat refresh token", err.Error())
+	}
 
 	userResponse := models.MapToUserResponse(user)
 	return utils.Success(ctx, "Login successful", fiber.Map{
@@ -127,7 +134,7 @@ func (c *UserController) UpdateUser(ctx *fiber.Ctx) error {
 	}
 
 	userUpdateData := &models.User{
-		Name:  req.Name,
+		Name: req.Name,
 	}
 
 	if err := c.service.Update(userUpdateData, publicID); err != nil {
