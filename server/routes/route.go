@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers.BoardController) {
+func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers.BoardController, lc *controllers.ListController) {
 	auth := app.Group("/api/auth")
 	auth.Post("/register", uc.Register)
 	auth.Post("/login", uc.Login)
@@ -24,4 +24,8 @@ func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers
 	board.Put("/:id", bc.UpdateBoard)
 	board.Post("/:id/members", bc.AddBoardMembers)
 	board.Delete("/:id/members", bc.RemoveBoardMembers)
+
+	list := app.Group("/api/lists", middleware.Protected())
+	list.Post("/", lc.CreateList)
+	
 }

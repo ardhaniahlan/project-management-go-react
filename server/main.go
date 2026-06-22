@@ -51,7 +51,12 @@ func main() {
 	boardService := services.NewBoardService(boardRepo, userRepo, boardMemberRepo)
 	boardController := controllers.NewBoardController(boardService)
 
-	routes.SetupRoutes(app, userController, boardController)
+	listRepo := repositories.NewListRepository(config.DB)
+	listPosRepo := repositories.NewListPositionRepository(config.DB)
+	listService := services.NewListService(config.DB, listRepo, boardRepo, listPosRepo)
+	listController := controllers.NewListController(listService)
+
+	routes.SetupRoutes(app, userController, boardController, listController)
 
 	port := config.AppConfig.AppPort
 	log.Println("Server berjalan di port ", port)
