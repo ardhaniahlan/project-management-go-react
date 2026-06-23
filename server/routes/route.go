@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App, uc *controllers.UserController, bc *controllers
 	board.Put("/:id", bc.UpdateBoard)
 	board.Post("/:id/members", bc.AddBoardMembers)
 	board.Delete("/:id/members", bc.RemoveBoardMembers)
+	board.Get("/:board_id/lists", lc.GetListOnBoard)
 
 	list := app.Group("/api/lists", middleware.Protected())
 	list.Post("/", lc.CreateList)
